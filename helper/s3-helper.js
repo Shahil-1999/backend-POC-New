@@ -18,7 +18,7 @@ async function getObjectImage(key) {
 }
 
 async function uploadObjectImage(filename) {
-  const ext = filename.split('.').pop().toLowerCase();
+  const ext = filename.split('.').pop().toLowerCase(); 
 
   let contentType;
   switch (ext) {
@@ -36,7 +36,12 @@ async function uploadObjectImage(filename) {
       throw new Error('Unsupported file type');
   }
 
+
+
   const fileKey = filename;
+  
+  console.log('filekey', fileKey);
+  
 
   const command = new PutObjectCommand({
     Bucket: process.env.AWSBucket,

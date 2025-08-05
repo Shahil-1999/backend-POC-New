@@ -1030,164 +1030,6 @@ async function resetPassword(req, res) {
     }
 }
 
-// async function fileUpload(req, res) {
-//     try {
-
-//         // Check if the user exists
-//         const userDetailsId = +req.payload.userDetailsId;
-
-//         const isUserExist = await prisma.userDetails.findUnique({
-//             where: {
-//                 id: userDetailsId,
-//                 is_deleted: false
-//             }
-//         });
-
-//         if (!isUserExist) {
-//             return res.response({
-//                 status: false,
-//                 msg: "User does not exist"
-//             });
-//         }
-
-//         // Check if the user already has an image uploaded
-//         const existingFile = await prisma.file.findFirst({
-//             where: {
-//                 userDetailsId: userDetailsId
-//             }
-//         });
-
-//         if (existingFile) {
-//             // Delete the existing file
-//             await prisma.file.delete({
-//                 where: {
-//                     id: existingFile.id
-//                 }
-//             });
-
-//             // Delete the existing file from the filesystem
-
-//         }
-
-//         // Process the uploaded file
-//         const file = req.payload.file;
-
-//         if (!file) {
-//             return res.response({
-//                 status: false,
-//                 msg: "No file uploaded"
-//             });
-//         }
-
-//         const fileData = await file._data; // Read file data (Buffer Data)
-//         const filename = file.hapi.filename;
-
-//         // Generate a random file name based on the current timestamp
-//         const randomFileName = Date.now();
-
-//         // Get the file extension from the original filename
-//         const fileArray = filename.split('.');
-//         const originalFileName = fileArray[0];
-//         const fileExtension = fileArray[1];
-
-//         // Construct the final file name with the random part and the original extension
-//         const finalFileName = `${originalFileName}-${randomFileName}.${fileExtension}`;
-
-//         // Save the new file to the database
-
-//         const savedFile = await prisma.file.create({
-//             data: {
-//                 filename: finalFileName,
-//                 // eslint-disable-next-line no-undef
-//                 fileData: Buffer.from(fileData),
-//                 user_name: isUserExist.name,
-//                 userDetailsId: userDetailsId
-//             }
-//         });
-
-//         // Save the new file to the filesystem
-//         // eslint-disable-next-line no-undef
-//         const uploadsFolder = path.join(__dirname, '../uploads');
-//         if (!fs.existsSync(uploadsFolder)) {
-//             fs.mkdirSync(uploadsFolder);
-//         }
-//         const filePath = path.join(uploadsFolder, finalFileName);
-//         fs.writeFileSync(filePath, fileData);
-
-//         return res.response({
-//             status: true,
-//             msg: "File uploaded",
-//             data: {
-//                 filename: savedFile.filename,
-//                 userDetailsId: savedFile.userDetailsId,
-//                 user_name: savedFile.user_name
-//             }
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         return res.response({
-//             status: false,
-//             msg: error.message || "Internal server error"
-//         });
-//     }
-// }
-
-// async function readFile(req, res) {
-//     try {
-
-//         const isUserExit = await prisma.userDetails.findUnique({
-//             where: {
-//                 id: +req.params.userDetailsId,
-//                 is_deleted: false
-//             }
-//         })
-//         if (isUserExit) {
-
-//             // Retrieve file data from Prisma
-//             const file = await prisma.file.findFirst({
-//                 where: {
-//                     userDetailsId: +req.params.userDetailsId
-//                 }
-//             });
-
-//             if (!file) {
-//                 return res.response({
-//                     status: false,
-//                     msg: "File not found"
-//                 })
-//             } else {
-
-//                 // Serve file data
-//                 const { credentials } = req.auth
-//                 if (credentials?.id === +req.params.userDetailsId) {
-//                     return res.response({
-//                         status: true,
-//                         msg: "file fetch sucessfully",
-//                         data: {
-//                             fileName: file.filename,
-//                             fileData: file.fileData
-//                         }
-//                     })
-//                 } else {
-//                     return res.response({
-//                         status: false,
-//                         msg: "Please Check Your UserDetailsId (token's id and UserDetailsId is mismatched)"
-//                     })
-//                 }
-//             }
-//         } else {
-//             return res.response({
-//                 status: false,
-//                 msg: "User Does Not Exist",
-//                 data: {}
-//             })
-//         }
-//     } catch (error) {
-//         console.log(error);
-//     }
-
-// }
-
 async function readAllFile(req, res) {
     try {
         // Check if user exists and is not deleted
@@ -1252,24 +1094,50 @@ async function getProfileImage(req, res) {
 
     try {
         const { key } = req.payload;
-        const { credentials } = req.auth
 
-         const imageNameFromDB = await prisma.file.findFirst({
-            where: {
-                userDetailsId: credentials.id,
-                is_deleted: false
-            },
-        })
-        console.log(imageNameFromDB);
-        
+        if(!key){
+            return res.response({
+            status: false,
+            message: 'key is not provided',
+        });
+        }
+     
         const url = await getObjectImage(key);
+        
 
         return res.response({
             status: true,
             message: 'Signed URL generated successfully',
             data: {
                 url,
-                imageNameFromDB
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.response({
+            status: false,
+            msg: error
+        })
+    }
+
+}
+async function getProfileImageKey(req, res) {
+
+    try {
+        const { credentials } = req.auth
+
+         const getImageKey = await prisma.file.findFirst({
+            where: {
+                userDetailsId: credentials.id,
+                is_deleted: false
+            },
+        })
+        
+        return res.response({
+            status: true,
+            message: 'Signed URL generated successfully',
+            data: {
+                getImageKey
             }
         });
     } catch (error) {
@@ -1282,41 +1150,52 @@ async function getProfileImage(req, res) {
 
 }
 
+
 async function uploadProfileImage(req, res) {
 
     try {
-        const { filename } = req.params;
+        let { filename } = req.params;
+        const {credentials} = req.auth      
 
-        const { user_name, userDetailsId } = req.payload;
-
-        let isUserExist = await prisma.file.findFirst({
+        const isUserExist = await prisma.userDetails.findFirst({
             where: {
-                userDetailsId,
+                id: credentials.id,
                 is_deleted: false
             }
         })
 
-        const fileName = `${Date.now()}-${filename}`
-        const { uploadUrl, fileLink } = await uploadObjectImage(fileName);
+        const isUserFileExist = await prisma.file.findFirst({
+            where: {
+                userDetailsId: credentials.id,
+                is_deleted: false
+            }
+        })
+        
+        
+        const extension = filename.split('.').pop();
+        filename = `profile-${credentials.id}.${extension}`;
+       
+        
+        const { uploadUrl, fileLink } = await uploadObjectImage(filename);
         let savedFile;
 
-        if (!isUserExist) {
+        if (isUserExist && !isUserFileExist) {
 
             savedFile = await prisma.file.create({
                 data: {
-                    filename: fileName,
+                    filename,
                     fileLink, // store full URL in DB
-                    user_name,
-                    userDetailsId
+                    user_name: isUserExist.name,
+                    userDetailsId: credentials.id
                 }
             });
         } else {
             savedFile = await prisma.file.update({
                 where: {
-                    id: isUserExist.id, // Use the unique ID
+                    userDetailsId: isUserExist.id, // Use the unique ID
                 },
                 data: {
-                    filename: fileName,
+                    filename,
                     fileLink,
                 },
             });
@@ -1360,15 +1239,12 @@ module.exports = {
     deleteAccount,
     forgetPassword,
     resetPassword,
-    editOwnComments,              // console.log("files", files);
-    // console.log("credentials", credentials);
-
+    editOwnComments,
     deleteOwnCommentsInAnyPost,
-    // fileUpload,
     getProfileImage,
     uploadProfileImage,
-    // readFile,
     test,
     getAllUser,
-    readAllFile
+    readAllFile,
+    getProfileImageKey
 }

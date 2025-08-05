@@ -241,10 +241,6 @@ const uploadProfileImageValidation = {
   params: joi.object({
     filename: joi.string().required().description('File name with extension')
   }),
-  payload: joi.object({
-    user_name: joi.string().required().description('User Name'),
-    userDetailsId: joi.number().required().description('User Details ID')
-  }),
     failAction: (req, h, err) => {
         console.log(`Error occured in : ${err.details[0].context.label}\nError description : ${err.details[0].message}`)
         throw err

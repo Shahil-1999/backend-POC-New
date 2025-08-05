@@ -282,6 +282,20 @@ let routes = [
         },
     },
 
+        {
+        method: 'GET',
+        path: '/profile_img/key',
+        options: {
+            auth: 'jwt',
+            handler: controller.getProfileImageKey,
+            description: 'Get Profile Image key',
+            notes: 'User can get his profile image key',
+            tags: ['api'],
+            plugins: plugins.getProfileImagKeyPlugin,
+
+        },
+    },
+
     // User can upload their profile image
 
     {

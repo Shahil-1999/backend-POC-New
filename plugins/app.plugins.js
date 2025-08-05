@@ -289,6 +289,20 @@ const getProfileImagPlugin = {
     }
 }
 
+const getProfileImagKeyPlugin = {
+    'HapiSwagger': {
+        responses: {
+            200: {
+                description: 'image key retrieved',
+            },
+            204: undefined, // pass-through "No Content" to swagger definition
+            400: {
+                description: 'Something wrong happened'
+            }
+        }
+    }
+}
+
 const uploadProfileImagPlugin = {
     'HapiSwagger': {
         responses: {
@@ -303,34 +317,6 @@ const uploadProfileImagPlugin = {
     }
 }
 
-// const multer = require('multer')
-// const fs = require('fs')
-// const fileUpload = {
-//     name: 'fileUpload',
-//     version: '1.0.0',
-//     register: multer.diskStorage({
-
-//         destination: function (req, file, cb) {
-//             fs.mkdir('demo', () => {
-//                 return cb(null, "demo")
-//             })
-
-//         },
-
-//         filename: function (req, file, cb) {
-//             const uniqueName = Date.now()   // i am adding date.now with file original name because if I upload same photo again then it will prevent to override.
-//             const originamName = file.originalname;
-
-
-//             return cb(null, uniqueName + '-' + originamName)
-//         }
-//     }),
-    
-// };
-// const profile_img = multer({
-//     storage: fileUpload
-// }).single('fileUpload')   // for multiple image .array(profileImage, 12). Here 12 is max count
-
 
 module.exports = {
     getUserDetailsPlugin,
@@ -343,7 +329,6 @@ module.exports = {
     userAddPlugin,
     userLoginPlugin,
     userAccountDeletePlugin,
-    // profile_img
     resetPasswordPlugin,
     forgetPasswordPlugin,
     getOwnPostPlugin,
@@ -354,6 +339,7 @@ module.exports = {
     getProfileImagPlugin,
     getAllUserImagePlugin,
     getAllUserPlugin,
-    uploadProfileImagPlugin
+    uploadProfileImagPlugin,
+    getProfileImagKeyPlugin
     
 }

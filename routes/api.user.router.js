@@ -4,11 +4,6 @@ const validation = require('../validations/app.validation')
 const plugins = require("../plugins/app.plugins")
 const subscriptionCheck = require('../middleware/app.subscription.auth')
 
-
-
-
-
-
 let routes = [
 
     {

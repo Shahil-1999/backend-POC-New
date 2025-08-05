@@ -74,7 +74,7 @@ model File {
   user_name     String
   is_deleted    Boolean      @default(false)
   UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
-  userDetailsId Int
+  userDetailsId Int          @unique
 }
 
 model Subscription {
